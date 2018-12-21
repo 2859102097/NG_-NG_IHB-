@@ -1,0 +1,350 @@
+//代码实现：
+double analogVotage;  //模拟电压值
+double temp;          //温度
+unsigned int dutyCycle;  //占空比
+unsigned int tempMin = 15;  //零速温度，设为串口观察到的环境温度
+unsigned int tempMax = 35;  //满速温度，设为串口观察到的手握元件温度
+
+
+#include "pitches.h"
+#define NTDH1 393
+#define NTDH2 451
+#define NTDH3 495
+#define NTDH4 525
+#define NTDH5 588
+#define NTDH6 663
+#define NTDH7 744
+
+#define NTD1 262
+#define NTD2 294
+#define NTD3 330
+#define NTD4 349
+#define NTD5 392
+#define NTD6 440
+#define NTD7 494
+
+#define NTDL1 131
+#define NTDL2 147
+#define NTDL3 165
+#define NTDL4 175
+#define NTDL5 196
+#define NTDL6 221
+#define NTDL7 248//定义音节
+
+
+#define WHOLE 1
+#define HALF 0.5
+#define QUARTER 0.25
+#define EIGHTH 0.25
+#define SIXTEENTH 0.625//定义节奏
+int a =200;        //亮度值
+int melody[] = {
+NOTE_G4,//5? 
+NOTE_G4,//5
+NOTE_A4,//6
+NOTE_G4,//5
+NOTE_C5,//1.
+NOTE_B4,//7
+0,
+NOTE_G4,//5
+NOTE_G4,//5
+NOTE_A4,//6
+NOTE_G4,//5
+NOTE_D5,//2.
+NOTE_C5,//1.
+0,
+NOTE_G4,//5
+NOTE_G4,//5
+NOTE_G5,//5.
+NOTE_E5,//3.
+NOTE_C5,//1.
+NOTE_B4,//7
+NOTE_A4,//6
+0,
+NOTE_F5,//4.
+NOTE_F5,//4.
+NOTE_E5,//3.
+NOTE_C5,//1.
+NOTE_D5,//2.
+NOTE_C5,//1.
+0,
+};
+int noteDurations[] = {
+  8,8,4,4,4,4,
+  4,
+  8,8,4,4,4,4,
+  4,
+  8,8,4,4,4,4,2,
+  8,
+  8,8,4,4,4,2,
+  4,
+   };
+int tune[]=
+{
+  NTD3,NTD3,NTD3,NTD1,NTD3,NTD5,NTDL5,
+  NTD1,NTDL5,NTDL3,NTDL6,
+  NTDL7,NTDL7,NTDL6,NTDL5,NTD3,NTD5,NTD6,NTD4,NTD5,NTD3,NTD1,NTD2,NTDL7,NTD1,NTDL5,
+  NTDL3,NTDL6,NTDL7,NTDL7,NTDL6,NTDL5,NTD3,
+  NTD5,NTD6,NTD4,NTD5,NTD3,NTD2,NTD1,NTDL7,NTD5,NTD4,NTD4,NTD3,NTD3,NTDL5,NTDL6,NTD1,
+  NTDL6,NTD1,NTD2,NTD5,NTD4,NTD4,NTD3,NTD3,NTDH1,
+  NTDH1,NTDH1,NTD5,NTD4,NTD4,NTD3,NTD3,NTDL5,NTDL6,NTD1,NTDL6,NTD1,NTD2,NTD3,
+  NTD2,NTD1,NTD5,
+  NTD4,NTD4,NTD3,NTD3,NTDL5,NTDL6,NTD1,NTDL6,NTD1,NTD2,NTD5,NTD4,NTD4,NTD3,NTD3,NTD1,NTD1,NTD1,
+  
+  
+  
+};//曲谱
+float durt[]=
+{
+  0.25,0.25,0.25,0.125,0.125,0.25,0.25,
+  0.125,0.125,0.25,0.25,
+  0.25,0.125,0.25,0.25,0.25,0.125,0.125,0.125,0.125,0.125,0.125,0.125,0.25,0.25,0.25,
+  0.125,0.25,0.125,0.125,0.25,0.125,0.25,
+  0.25,0.25,0.25,0.25,0.25,0.125,0.125,0.5,0.25,0.125,0.125,0.25,0.25,0.125,0.25,0.25,
+  0.125,0.125,0.25,0.125,0.125,0.25,0.25,0.25,0.25,
+  0.25,0.25,0.125,0.125,0.125,0.25,0.25,0.125,0.125,0.25,0.125,0.125,0.125,0.25,
+  0.25,0.125,0.125,
+  0.125,0.125,0.125,0.125,0.125,0.125,0.25,0.125,0.125,0.125,0.125,0.125,0.125,0.25,0.125,0.125,0.25,0.25
+};//节奏谱
+int tune1[]=
+{
+  NTD1,NTD1,NTD1,NTDL5,
+  NTD3,NTD3,NTD3,NTD1,
+  NTD1,NTD3,NTD5,NTD5,
+  NTD4,NTD3,NTD2,
+  NTD2,NTD3,NTD4,NTD4,
+  NTD3,NTD2,NTD3,NTD1,
+  NTD1,NTD3,NTD2,NTDL5,
+  NTDL7,NTD2,NTD1
+  
+  
+};//曲谱
+float durt1[]=
+{
+  0.25,0.25,0.5,0.5,
+  0.25,0.25,0.5,0.5,
+  0.25,0.25,0.5,0.5,
+  0.25,0.25,1,
+  0.25,0.25,0.5,0.5,
+  0.25,0.25,0.5,0.5,
+  0.25,0.25,0.5,0.5,
+  0.25,0.25,1,
+};//节奏谱
+int ledPIN=2;
+int ledPIN2=3;
+int ledPIN3=4;
+int tonePIN=8;
+int length1;
+int length2;
+
+int brightness=4; //LED的亮度 
+int fadeAmount=5; //亮度变化增量
+
+
+void setup ()
+{
+  pinMode(5,INPUT);                 //将4号数字口设置为输入状态，13号数字口设置为输出状态
+  pinMode(13,OUTPUT);
+  Serial.begin(115200);      //设置串口波特率
+  analogReference(INTERNAL);  //调用板载1.1V基准源
+  pinMode(10,OUTPUT);  //设置输出口
+  pinMode(tonePIN,OUTPUT);
+;
+
+  length1=sizeof(tune1)/sizeof(tune1[0]);
+  length2=sizeof(tune)/sizeof(tune[0]);
+}
+ 
+void loop()
+{
+  int m = digitalRead(5);                   //创建一个变量n，将4号数字口的状态采集出来赋值给他。
+  if (m==HIGH)                             //判断n是否为高电平，如果是执行下面的语句，不是则跳过。
+  {
+    digitalWrite(13,HIGH);
+    delay(1000);
+    digitalWrite(13,LOW);
+  }
+  analogVotage = 1.1*(float)analogRead(A3)/1024;   //把ADC读取值换算成电压
+  temp = 100*analogVotage;      //电压换算成温度
+  if (temp < tempMin){
+      dutyCycle = 0;
+      }
+  else if (temp < tempMax){
+      dutyCycle = (temp-tempMin)*255/(tempMax-tempMin);
+      }
+  else {
+      dutyCycle = 255;
+      }
+  analogWrite(10,dutyCycle);  //产生PWM
+  Serial.print("Temp: "); Serial.print(temp);
+  Serial.print(" Degrees    Duty cycle: ");
+  Serial.println(dutyCycle);
+  delay(100);    //等待0.1秒，控制刷新速度
+
+int n = analogRead(A3);   //读取模拟口A3，获取光强
+    Serial.println(n);               // 用于IDE串口观察窗
+    if (n<= a )                         //对光强进行判断
+        {for(int i=1;i<=600;i++)
+    {
+       analogWrite(3,brightness); //点亮LED
+       analogWrite(2,brightness); //点亮LED
+ 
+  analogWrite(4,brightness); //点亮LED
+      
+    
+    brightness=brightness+fadeAmount; 
+    if(brightness<=0|| brightness>=255)
+      fadeAmount=-fadeAmount; //亮度翻转 
+    delay(10);
+    // iterate over the notes of the melody:
+}
+          digitalWrite(10,HIGH);
+          for (int thisNote = 0; thisNote <29 ; thisNote++) {
+    // to calculate the note duration, take one second 
+    // divided by the note type.
+    //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
+    int noteDuration = 1000/noteDurations[thisNote];
+    tone(8, melody[thisNote],noteDuration);
+    // to distinguish the notes, set a minimum time between them.
+    // the note's duration + 30% seems to work well:
+    int pauseBetweenNotes = noteDuration * 1.30;
+    delay(pauseBetweenNotes);
+    // stop the tone playing:
+    noTone(8);
+    
+    }
+   for(int x=0;x<length2;x++)
+  {
+    tone(tonePIN,tune[x]);
+    analogWrite(3,brightness); //点亮LED 
+    digitalWrite(ledPIN2, HIGH);
+    digitalWrite(ledPIN3, HIGH);
+    
+  
+    digitalWrite(ledPIN, HIGH);
+    delay(800*durt[x]);//这里用来根据节拍调节延时，指数可以自己调整。这里将1000分为了800和200，分别控制led的开与关，对于蜂鸣器来说是1000。
+    digitalWrite(ledPIN, LOW);
+    digitalWrite(ledPIN2, LOW);
+    digitalWrite(ledPIN3, LOW);
+    delay(200*durt[x]);
+    noTone(tonePIN);
+}
+  delay(2000);
+     for(int x=0;x<length1;x++)
+  {
+    tone(tonePIN,tune1[x]);
+    analogWrite(3,brightness); //点亮LED 
+    digitalWrite(ledPIN2, HIGH);
+    digitalWrite(ledPIN3, HIGH);
+    digitalWrite(ledPIN, HIGH);
+    delay(800*durt1[x]);//这里用来根据节拍调节延时，指数可以自己调整。这里将1000分为了800和200，分别控制led的开与关，对于蜂鸣器来说是1000。
+    digitalWrite(ledPIN, LOW);
+    digitalWrite(ledPIN2, LOW);
+    digitalWrite(ledPIN3, LOW);
+    delay(200*durt1[x]);
+    noTone(tonePIN);
+}
+  delay(2000);
+   }
+    else
+        digitalWrite(10,LOW);
+    delay(100);       //防止串口写入速度过快
+   
+  
+  
+}
+
+//库文件"pitches.h"
+/*************************************************
+ * Public Constants
+ *************************************************/
+
+#define NOTE_B0  31
+#define NOTE_C1  33
+#define NOTE_CS1 35
+#define NOTE_D1  37
+#define NOTE_DS1 39
+#define NOTE_E1  41
+#define NOTE_F1  44
+#define NOTE_FS1 46
+#define NOTE_G1  49
+#define NOTE_GS1 52
+#define NOTE_A1  55
+#define NOTE_AS1 58
+#define NOTE_B1  62
+#define NOTE_C2  65
+#define NOTE_CS2 69
+#define NOTE_D2  73
+#define NOTE_DS2 78
+#define NOTE_E2  82
+#define NOTE_F2  87
+#define NOTE_FS2 93
+#define NOTE_G2  98
+#define NOTE_GS2 104
+#define NOTE_A2  110
+#define NOTE_AS2 117
+#define NOTE_B2  123
+#define NOTE_C3  131
+#define NOTE_CS3 139
+#define NOTE_D3  147
+#define NOTE_DS3 156
+#define NOTE_E3  165
+#define NOTE_F3  175
+#define NOTE_FS3 185
+#define NOTE_G3  196
+#define NOTE_GS3 208
+#define NOTE_A3  220
+#define NOTE_AS3 233
+#define NOTE_B3  247
+#define NOTE_C4  262
+#define NOTE_CS4 277
+#define NOTE_D4  294
+#define NOTE_DS4 311
+#define NOTE_E4  330
+#define NOTE_F4  349
+#define NOTE_FS4 370
+#define NOTE_G4  392
+#define NOTE_GS4 415
+#define NOTE_A4  440
+#define NOTE_AS4 466
+#define NOTE_B4  494
+#define NOTE_C5  523
+#define NOTE_CS5 554
+#define NOTE_D5  587
+#define NOTE_DS5 622
+#define NOTE_E5  659
+#define NOTE_F5  698
+#define NOTE_FS5 740
+#define NOTE_G5  784
+#define NOTE_GS5 831
+#define NOTE_A5  880
+#define NOTE_AS5 932
+#define NOTE_B5  988
+#define NOTE_C6  1047
+#define NOTE_CS6 1109
+#define NOTE_D6  1175
+#define NOTE_DS6 1245
+#define NOTE_E6  1319
+#define NOTE_F6  1397
+#define NOTE_FS6 1480
+#define NOTE_G6  1568
+#define NOTE_GS6 1661
+#define NOTE_A6  1760
+#define NOTE_AS6 1865
+#define NOTE_B6  1976
+#define NOTE_C7  2093
+#define NOTE_CS7 2217
+#define NOTE_D7  2349
+#define NOTE_DS7 2489
+#define NOTE_E7  2637
+#define NOTE_F7  2794
+#define NOTE_FS7 2960
+#define NOTE_G7  3136
+#define NOTE_GS7 3322
+#define NOTE_A7  3520
+#define NOTE_AS7 3729
+#define NOTE_B7  3951
+#define NOTE_C8  4186
+#define NOTE_CS8 4435
+#define NOTE_D8  4699
+#define NOTE_DS8 4978
